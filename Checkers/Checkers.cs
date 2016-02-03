@@ -27,10 +27,7 @@ namespace Checkers
         public Checkers()
         {
             InitializeComponent();
-            //_GameTurn.BoardArrayChangedEventHandler += BoardArrayChanged;
-            var ba = new BoardArray<int>(BOARDSIZE, BOARDSIZE);
-            //ba.ArrayChanged += BoardArrayChanged;
-            _GameTurn.BOARDARRAY = ba;
+            _GameTurn.BOARDARRAY = new int[BOARDSIZE, BOARDSIZE];
 
             InitBoard();
             _WhitePlayer.PropertyChanged += WhitePlayer_PropertyChanged;
@@ -381,7 +378,7 @@ namespace Checkers
             }
         }
 
-        private IEnumerable<BoardChange> FindComputerChanges(BoardArray<int> currentBoard, BoardArray<int> computerMoves)
+        private IEnumerable<BoardChange> FindComputerChanges(int[,] currentBoard, int[,]computerMoves)
         {
             for(int r =0; r < BOARDSIZE; r++)
             {
@@ -402,7 +399,7 @@ namespace Checkers
 
         }
 
-        private GridEntry[] TransformBoardToAIGridArray(BoardArray<int> boardArray)
+        private GridEntry[] TransformBoardToAIGridArray(int[,] boardArray)
         {
             GridEntry[] transformed = new GridEntry[BOARDSIZE * BOARDSIZE];
 
@@ -421,9 +418,9 @@ namespace Checkers
             return transformed;
         }
 
-        private BoardArray<int> TransformGridToBoard(GridEntry[] grid)
+        private int[,] TransformGridToBoard(GridEntry[] grid)
         {
-            BoardArray<int> bArray = new BoardArray<int>(BOARDSIZE, BOARDSIZE);
+            int[,] bArray = new int[BOARDSIZE, BOARDSIZE];
             for(int i = 0; i < grid.Length; i++)
             {
                 int iRow = i/8;
@@ -509,7 +506,7 @@ namespace Checkers
             AdjustBoard(captureLocation, GridEntry.EMPTY);
         }
 
-        private void ShowBoard(BoardArray<int> board, string sTitle)
+        private void ShowBoard(int[,] board, string sTitle)
         {
             this.mBox.AppendText(Environment.NewLine);
             this.mBox.AppendText(sTitle + Environment.NewLine);

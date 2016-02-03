@@ -115,31 +115,7 @@ namespace Checkers.AI
             //{29, 0, 0, 0, 0, 0, 0, 0 }
             };
 
-        public bool IsTerminalNode()
-        {
-            if (GameOver)
-                return true;
 
-            bool bWhitesGone = false;
-            bool bBlacksGone = false;
-
-            foreach (GridEntry v in BoardArray)
-            {
-                //TODO:: 
-                //Very important to determine 
-                //if it's Black's turn and Black has a move or if Black or a piece left
-                //Or if it's White turn and White has a move or if White or a piece left 
-                //If there are no more moves to make for a player then you have reached a leaf node
-
-                if (v == GridEntry.WHITEKING || v == GridEntry.WHITEPAWN)
-                    bWhitesGone = false;
-
-                if (v == GridEntry.BLACKPAWN || v == GridEntry.BLACKKING)
-                    bBlacksGone = false;
-            }
-
-            return (m_TurnForPlayerBlack && bWhitesGone) || (!m_TurnForPlayerBlack && bBlacksGone);
-        }
 
         public void ComputerScore()
         {
@@ -228,29 +204,59 @@ namespace Checkers.AI
             int CountW = 0;
             int CountBK = 0;
             int CountWK = 0;
+            //var bMoveLeftForBlack = false;
+            //var bMoveLeftForWhite = false;
+
+            
+
+            //for (int i = 0; i < BoardArray.Count(); i++)
+            //{
+            //    var piece = BoardArray[i];
+            //    if (piece == GridEntry.BLACKPAWN || piece == GridEntry.BLACKKING)
+            //    {
+            //        bMoveLeftForBlack = moveLeftForBlack(piece, i);
+            //        if (bMoveLeftForBlack)
+            //            break;
+            //    }
+            //}
+
+            //for (int i = 0; i < BoardArray.Count(); i++)
+            //{
+            //    var piece = BoardArray[i];
+            //    if (piece == GridEntry.WHITEKING || piece == GridEntry.WHITEPAWN)
+            //    {
+            //        bMoveLeftForWhite = moveLeftForWhite(piece, i);
+            //        if (bMoveLeftForWhite)
+            //            break;
+            //    }
+            //}
+
+            //if ((m_TurnForPlayerBlack && !bMoveLeftForBlack) || (!m_TurnForPlayerBlack && !bMoveLeftForWhite))
+            //    GameOver = true;
 
             for(int i = 0; i < bArray.Count(); i++)
             {
-                if(bArray[i] == GridEntry.NULL || bArray[i] == GridEntry.EMPTY)
+                var piece = bArray[i];
+                if (piece == GridEntry.NULL || piece == GridEntry.EMPTY)
                     continue;
 
-                if (bArray[i] == GridEntry.BLACKPAWN)
+                if (piece == GridEntry.BLACKPAWN)
                 {
                     CountB++;
                 }
 
-                if (bArray[i] == GridEntry.WHITEPAWN)
+                if (piece == GridEntry.WHITEPAWN)
                 {
                     CountW++;
                 }
 
-                if (bArray[i] == GridEntry.BLACKKING)
+                if (piece == GridEntry.BLACKKING)
                 {
                     CountB += 1;
                     CountBK += 3;
                 }
 
-                if (bArray[i] == GridEntry.WHITEKING)
+                if (piece == GridEntry.WHITEKING)
                 {
                     CountW += 1;
                     CountWK += 3;
@@ -406,17 +412,46 @@ namespace Checkers.AI
             };
         }
 
+        public bool IsTerminalNode()
+        {
+            if (GameOver)
+                return true;
+
+            bool bMoveLeftForBlack = false;
+            bool bMoveLeftForWhite = false;
+
+
+            //Very important to determine 
+            //if it's Black's turn and Black has a move or if Black or a piece left
+            //Or if it's White turn and White has a move or if White or a piece left 
+            //If there are no more moves to make for a player then you have reached a leaf node
+            for (int i = 0; i < BoardArray.Count(); i++)
+            {
+                var piece = BoardArray[i];
+                if (piece == GridEntry.NULL || piece == GridEntry.EMPTY)
+                    continue;
+
+                if ((piece == GridEntry.BLACKPAWN || piece == GridEntry.BLACKKING) && bMoveLeftForBlack == false)
+                {
+                    bMoveLeftForBlack = moveLeftForBlack(piece, i);
+                }
+
+                if ((piece == GridEntry.WHITEKING || piece == GridEntry.WHITEPAWN) && bMoveLeftForWhite == false)
+                {
+                    bMoveLeftForWhite = moveLeftForWhite(piece, i);
+                }
+            }
+
+            return (m_TurnForPlayerBlack && !bMoveLeftForBlack) || (!m_TurnForPlayerBlack && !bMoveLeftForWhite);
+        }
+
         public List<Board> GetChildren()
         {
             List<Board> PossibleBoards = new List<Board>();
             for (int i = 0; i < BoardArray.Length; i++)
             {
                 if (BoardArray[i] != GridEntry.NULL)
-                {
-                    //We need to determine who's move it is, 
-                    //Determine if the move is legal for them and update the array
-                    //then switch player at the end because the next move would be the opponets                    
-
+                {             
                     if (!m_TurnForPlayerBlack && (BoardArray[i] == GridEntry.WHITEKING || BoardArray[i] == GridEntry.WHITEPAWN))
                     {
                         List<List<int>> linesToEvaluate = new List<List<int>>();
@@ -582,6 +617,135 @@ namespace Checkers.AI
             }
 
             return PossibleBoards;
+        }
+
+        public bool moveLeftForBlack(GridEntry piece, int i)
+        {
+            if (m_TurnForPlayerBlack && (piece == GridEntry.BLACKKING || piece == GridEntry.BLACKPAWN))
+            {
+                List<List<int>> linesToEvaluate = new List<List<int>>();
+                linesToEvaluate = gameLines.FindAll(ByGridForBlack(piece, i));
+                List<List<int>> linesEvaluated = new List<List<int>>();
+                List<List<int>> extraLines = new List<List<int>>();
+
+                if (piece == GridEntry.BLACKKING)
+                {
+                    foreach (var bline in linesToEvaluate)
+                    {
+                        var nLine = new List<int>();
+                        nLine.AddRange(bline);
+                        extraLines.Add(nLine);
+                    }
+                }
+
+                linesToEvaluate.AddRange(extraLines);
+
+                foreach (var line in linesToEvaluate)
+                {
+                    bool bKingReverseLine = linesEvaluated.Any(y => y.All(j => line.Contains(j)));
+                    linesEvaluated.Add(line);
+
+                    bool isMove = false;
+
+                    int squareCurrentPieceIsOn = line.IndexOf(i);
+                    int squareToMoveTo = piece == GridEntry.BLACKKING ? (bKingReverseLine ? squareCurrentPieceIsOn + 1 : squareCurrentPieceIsOn - 1) : squareCurrentPieceIsOn - 1;
+                    int captureIndexForBlack = piece == GridEntry.BLACKKING ? (bKingReverseLine ? squareCurrentPieceIsOn + 2 : squareCurrentPieceIsOn - 2) : squareCurrentPieceIsOn - 2;
+                    int moveSquare = 0;
+                    int captureSquare = 0;
+                    GridEntry staringSquare = piece;
+                    GridEntry[] newValuesForBoardArray = (GridEntry[])BoardArray.Clone();
+
+                    if (squareToMoveTo >= 0 && squareToMoveTo < line.Count())
+                    {
+                        moveSquare = line[squareToMoveTo];
+                        captureSquare = captureIndexForBlack >= 0 && captureIndexForBlack < 8 ? line[captureIndexForBlack] : -1;
+
+                        bool bHasCaptureSquareToLandOn = captureSquare >= 0 && BoardArray[captureSquare] == GridEntry.EMPTY;
+                        bool bHasPieceThatCanBeCaptued = BoardArray[moveSquare] == GridEntry.WHITEKING || BoardArray[moveSquare] == GridEntry.WHITEPAWN;
+                        bool bHasMoveThatCanBeMade = BoardArray[moveSquare] == GridEntry.EMPTY;
+
+                        if ((bHasMoveThatCanBeMade || (bHasCaptureSquareToLandOn && bHasPieceThatCanBeCaptued)) == false)
+                            continue;
+
+                        if (BoardArray[moveSquare] == GridEntry.EMPTY)
+                        {
+                            return true;
+                        }
+
+                        if (captureSquare > 0 && !isMove)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        public bool moveLeftForWhite(GridEntry piece, int i)
+        {
+            if (!m_TurnForPlayerBlack && (BoardArray[i] == GridEntry.WHITEKING || BoardArray[i] == GridEntry.WHITEPAWN))
+            {
+                List<List<int>> linesToEvaluate = new List<List<int>>();
+                linesToEvaluate = gameLines.FindAll(ByGridForWhite(BoardArray[i], i));
+                List<List<int>> linesEvaluated = new List<List<int>>();
+                List<List<int>> extraLines = new List<List<int>>();
+
+                if (BoardArray[i] == GridEntry.WHITEKING)
+                {
+                    foreach (var bline in linesToEvaluate)
+                    {
+                        List<int> nLine = new List<int>();
+                        foreach (int r in bline)
+                        {
+                            nLine.Add(r);
+                        }
+                        extraLines.Add(nLine);
+                    }
+                }
+
+                linesToEvaluate.AddRange(extraLines);
+                foreach (var line in linesToEvaluate)
+                {
+                    bool bKingReverseLine = linesEvaluated.Contains(line);
+                    linesEvaluated.Add(line);
+
+                    bool isMove = false;
+
+                    int squareCurrentPieceIsOnIndex = line.IndexOf(i);
+                    int squareToMoveToIndex = BoardArray[i] == GridEntry.WHITEKING ? (bKingReverseLine ? squareCurrentPieceIsOnIndex - 1 : squareCurrentPieceIsOnIndex + 1) : squareCurrentPieceIsOnIndex + 1;
+                    int captureIndexForWhiteIndex = BoardArray[i] == GridEntry.WHITEKING ? (bKingReverseLine ? squareCurrentPieceIsOnIndex - 2 : squareCurrentPieceIsOnIndex + 2) : squareCurrentPieceIsOnIndex + 2;
+                    int moveSquare = 0;
+                    int captureSquare = 0;
+                    GridEntry staringSquare = BoardArray[i];
+                    GridEntry[] newValuesForBoardArray = (GridEntry[])BoardArray.Clone();
+
+                    if (squareToMoveToIndex >= 0 && squareToMoveToIndex < line.Count())
+                    {
+                        moveSquare = line[squareToMoveToIndex];
+                        captureSquare = captureIndexForWhiteIndex > 0 && captureIndexForWhiteIndex < line.Count() ? line[captureIndexForWhiteIndex] : -1;
+
+                        bool bHasCaptureSquareToLandOn = captureSquare >= 0 && BoardArray[captureSquare] == GridEntry.EMPTY;
+                        bool bHasPieceThatCanBeCaptued = BoardArray[moveSquare] == GridEntry.BLACKKING || BoardArray[moveSquare] == GridEntry.BLACKPAWN;
+                        bool bHasMoveThatCanBeMade = BoardArray[moveSquare] == GridEntry.EMPTY;
+
+                        if ((bHasMoveThatCanBeMade || (bHasCaptureSquareToLandOn && bHasPieceThatCanBeCaptued)) == false)
+                            continue;
+
+                        if (BoardArray[moveSquare] == GridEntry.EMPTY)
+                        {
+                            return true;
+                        }
+
+                        if (captureSquare > 0 && !isMove)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }

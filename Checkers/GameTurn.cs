@@ -21,19 +21,22 @@ namespace Checkers
             }
         }
 
-        public BoardArray<int> BOARDARRAY
-        {
-            get { return _BOARD_ARRAY; }
-            set
-            {
-                if(_BOARD_ARRAY != value)
-                {
-                    _BOARD_ARRAY = value;
-                }
-            }
-        }
+        //public BoardArray<int> BOARDARRAY
+        //{
+        //    get { return _BOARD_ARRAY; }
+        //    set
+        //    {
+        //        if(_BOARD_ARRAY != value)
+        //        {
+        //            _BOARD_ARRAY = value;
+        //        }
+        //    }
+        //}
 
-        private BoardArray<int> _BOARD_ARRAY;
+        //private BoardArray<int> _BOARD_ARRAY;
+
+        public int[,] BOARDARRAY { get; set; }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
 
