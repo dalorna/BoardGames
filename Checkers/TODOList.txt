@@ -1,0 +1,13 @@
+﻿Add in difficulty level (i.e. adjust depth)
+refactor looping cycles to be more modular for determining moves
+refactor AI moves and player moves to use the same code class
+put all code classes in seperate code files
+Make AI game loops the same Player game loops for board interchanges 
+	(i.e. handing a player board shouldn't require a translation from a AI board and vice versa')
+User should be able to select between white and black, and other colors
+User should be able to change colors of the board
+when a player clicks on a piece, the possible moves should highlight
+save and load game
+
+port to MVC
+Port to Android mobile...

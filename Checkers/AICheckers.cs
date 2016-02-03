@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace Checkers.AI
 {
-    //TODO:: Need Game Over Conditions
     public class AICheckers
     {
 

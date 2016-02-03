@@ -98,6 +98,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="TODOList.txt" />
     <EmbeddedResource Include="Assets\BlackKing.png" />
     <EmbeddedResource Include="Assets\BlackPiece.png" />
     <Content Include="Assets\pieceRed_border11.png" />
