@@ -1,4 +1,5 @@
 ﻿Add in difficulty level (i.e. adjust depth)
+Add win scenario
 refactor looping cycles to be more modular for determining moves
 refactor AI moves and player moves to use the same code class
 put all code classes in seperate code files

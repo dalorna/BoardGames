@@ -77,7 +77,7 @@ namespace Checkers.AI
     {
         public int m_Score = 0;
         public GridEntry[] BoardArray;
-        bool m_TurnForPlayerBlack;// = false;
+        bool m_TurnForPlayerBlack;
         public bool GameOver
         {
             get;
@@ -97,24 +97,19 @@ namespace Checkers.AI
         }
 
         public List<List<int>> gameLines = new List<List<int>>()
-            {//{4, 0, 0, 0, 0, 0, 0, 0 },
-            new List<int> (){1, 8, 0, 0, 0, 0, 0, 0 },
-            new List<int> (){3, 10, 17, 24, 0, 0, 0, 0 },
-            new List<int> (){5, 12, 19, 26, 33, 40, 0, 0 },
-            new List<int> (){7, 14, 21, 28, 35, 42, 49, 56 },
-            new List<int> (){23, 30, 37, 44, 51, 58, 0, 0 },
-            new List<int> (){39, 46, 53, 60, 0, 0, 0, 0 },
-            new List<int> (){55, 62, 0, 0, 0, 0, 0, 0 },
-            new List<int> (){5, 14, 23, 0, 0, 0, 0, 0} ,
-            new List<int> (){3, 12, 21, 30, 39, 0, 0 , 0 },
-            new List<int> (){1, 10, 19, 28, 37, 46, 55, 0 },
-            new List<int> (){8, 17, 26, 35, 44, 53, 62, 0 },
-            new List<int> (){24, 33, 42, 51, 60, 0, 0, 0 },
-            new List<int> (){40, 49, 58, 0, 0, 0, 0, 0 }//,
-            //{29, 0, 0, 0, 0, 0, 0, 0 }
-            };
-
-
+            {   new List<int> (){1, 8, 0, 0, 0, 0, 0, 0 },
+                new List<int> (){3, 10, 17, 24, 0, 0, 0, 0 },
+                new List<int> (){5, 12, 19, 26, 33, 40, 0, 0 },
+                new List<int> (){7, 14, 21, 28, 35, 42, 49, 56 },
+                new List<int> (){23, 30, 37, 44, 51, 58, 0, 0 },
+                new List<int> (){39, 46, 53, 60, 0, 0, 0, 0 },
+                new List<int> (){55, 62, 0, 0, 0, 0, 0, 0 },
+                new List<int> (){5, 14, 23, 0, 0, 0, 0, 0} ,
+                new List<int> (){3, 12, 21, 30, 39, 0, 0 , 0 },
+                new List<int> (){1, 10, 19, 28, 37, 46, 55, 0 },
+                new List<int> (){8, 17, 26, 35, 44, 53, 62, 0 },
+                new List<int> (){24, 33, 42, 51, 60, 0, 0, 0 },
+                new List<int> (){40, 49, 58, 0, 0, 0, 0, 0 } };
 
         public void ComputerScore()
         {
@@ -432,12 +427,12 @@ namespace Checkers.AI
 
                 if ((piece == GridEntry.BLACKPAWN || piece == GridEntry.BLACKKING) && bMoveLeftForBlack == false)
                 {
-                    bMoveLeftForBlack = moveLeftForBlack(piece, i);
+                    bMoveLeftForBlack = MoveForBlack(piece, i).Count() > 0; //moveLeftForBlack(piece, i);
                 }
 
                 if ((piece == GridEntry.WHITEKING || piece == GridEntry.WHITEPAWN) && bMoveLeftForWhite == false)
                 {
-                    bMoveLeftForWhite = moveLeftForWhite(piece, i);
+                    bMoveLeftForWhite = MoveForWhite(piece, i).Count() > 0; //moveLeftForWhite(piece, i);
                 }
             }
 
@@ -449,177 +444,21 @@ namespace Checkers.AI
             List<Board> PossibleBoards = new List<Board>();
             for (int i = 0; i < BoardArray.Length; i++)
             {
-                if (BoardArray[i] != GridEntry.NULL)
-                {             
-                    if (!m_TurnForPlayerBlack && (BoardArray[i] == GridEntry.WHITEKING || BoardArray[i] == GridEntry.WHITEPAWN))
-                    {
-                        List<List<int>> linesToEvaluate = new List<List<int>>();
-                        linesToEvaluate = gameLines.FindAll(ByGridForWhite(BoardArray[i], i));
-                        List<List<int>> linesEvaluated = new List<List<int>>();
-                        List<List<int>> extraLines = new List<List<int>>();
-
-                        if (BoardArray[i] == GridEntry.WHITEKING)
-                        {
-                            foreach (var bline in linesToEvaluate)
-                            {
-                                List<int> nLine = new List<int>();
-                                foreach (int r in bline)
-                                {
-                                    nLine.Add(r);
-                                }
-                                extraLines.Add(nLine);
-                            }
-                        }
-
-                        foreach (var l in extraLines)
-                        {
-                            linesToEvaluate.Add(l);
-                        }
-
-                        foreach (var line in linesToEvaluate)
-                        {
-                            bool bKingReverseLine = linesEvaluated.Contains(line);
-                            linesEvaluated.Add(line);
-
-                            bool isCapture = false;
-                            bool isMove = false;
-
-                            int squareCurrentPieceIsOnIndex = line.IndexOf(i);
-                            int squareToMoveToIndex = BoardArray[i] == GridEntry.WHITEKING ? (bKingReverseLine ? squareCurrentPieceIsOnIndex - 1 : squareCurrentPieceIsOnIndex + 1) :  squareCurrentPieceIsOnIndex + 1;
-                            int captureIndexForWhiteIndex = BoardArray[i] == GridEntry.WHITEKING ? (bKingReverseLine ? squareCurrentPieceIsOnIndex - 2 : squareCurrentPieceIsOnIndex + 2) : squareCurrentPieceIsOnIndex + 2;
-                            int moveSquare = 0;
-                            int captureSquare = 0;
-                            GridEntry staringSquare = BoardArray[i];
-                            GridEntry[] newValuesForBoardArray = (GridEntry[])BoardArray.Clone();
-
-                            if (squareToMoveToIndex >= 0 && squareToMoveToIndex < line.Count())
-                            {
-                                moveSquare = line[squareToMoveToIndex];
-                                captureSquare = captureIndexForWhiteIndex > 0 && captureIndexForWhiteIndex < line.Count() ? line[captureIndexForWhiteIndex] : -1;
-
-                                bool bHasCaptureSquareToLandOn = captureSquare >= 0 && BoardArray[captureSquare] == GridEntry.EMPTY;
-                                bool bHasPieceThatCanBeCaptued = BoardArray[moveSquare] == GridEntry.BLACKKING || BoardArray[moveSquare] == GridEntry.BLACKPAWN;
-                                bool bHasMoveThatCanBeMade = BoardArray[moveSquare] == GridEntry.EMPTY;
-
-                                if ((bHasMoveThatCanBeMade || (bHasCaptureSquareToLandOn && bHasPieceThatCanBeCaptued)) == false)
-                                    continue;
-
-                                if (BoardArray[moveSquare] == GridEntry.EMPTY)
-                                {
-                                    isMove = true;
-                                }
-
-                                if (captureSquare > 0 && !isMove)
-                                {
-                                    isCapture = true;
-                                }
-                            }
-
-                            if (isMove)
-                            {
-                                newValuesForBoardArray[moveSquare] = (staringSquare == GridEntry.WHITEPAWN && (moveSquare == 56 || moveSquare == 58 || moveSquare ==  60 || moveSquare ==  62)) ? GridEntry.WHITEKING : staringSquare;
-                                newValuesForBoardArray[i] = GridEntry.EMPTY;
-                                PossibleBoards.Add(new Board(newValuesForBoardArray, !m_TurnForPlayerBlack));
-                            }
-
-                            if (isCapture)
-                            {
-                                newValuesForBoardArray[captureSquare] = (staringSquare == GridEntry.WHITEPAWN && (moveSquare == 56 || moveSquare == 58 || moveSquare == 60 || moveSquare == 62)) ? GridEntry.WHITEKING : staringSquare;
-                                newValuesForBoardArray[moveSquare] = GridEntry.EMPTY;
-                                newValuesForBoardArray[i] = GridEntry.EMPTY;
-                                PossibleBoards.Add(new Board(newValuesForBoardArray, !m_TurnForPlayerBlack));
-                            }
-                        }
-                    }
-
-                    if (m_TurnForPlayerBlack && (BoardArray[i] == GridEntry.BLACKKING || BoardArray[i] == GridEntry.BLACKPAWN))
-                    {
-                        List<List<int>> linesToEvaluate = new List<List<int>>();
-                        linesToEvaluate = gameLines.FindAll(ByGridForBlack(BoardArray[i], i));
-                        List<List<int>> linesEvaluated = new List<List<int>>();
-                        List<List<int>> extraLines = new List<List<int>>();
-                       
-                        if (BoardArray[i] == GridEntry.BLACKKING)
-                        {
-                            foreach(var bline in linesToEvaluate)
-                            {
-                                List<int> nLine = new List<int>();
-                                foreach(int r in bline)
-                                {
-                                    nLine.Add(r);
-                                }
-                                extraLines.Add(nLine);
-                            }
-                        }
-
-                        foreach(var l in extraLines)
-                        {
-                            linesToEvaluate.Add(l);
-                        }
-                        
-                        foreach (var line in linesToEvaluate)
-                        {
-                            bool bKingReverseLine = linesEvaluated.Any(y => y.All(j => line.Contains(j)));
-                            linesEvaluated.Add(line);
-
-                            bool isCapture = false;
-                            bool isMove = false;
-
-                            int squareCurrentPieceIsOn = line.IndexOf(i);
-                            int squareToMoveTo = BoardArray[i] == GridEntry.BLACKKING ? (bKingReverseLine ? squareCurrentPieceIsOn + 1 : squareCurrentPieceIsOn - 1) : squareCurrentPieceIsOn - 1;
-                            int captureIndexForBlack = BoardArray[i] == GridEntry.BLACKKING ? (bKingReverseLine ? squareCurrentPieceIsOn + 2 : squareCurrentPieceIsOn - 2) : squareCurrentPieceIsOn - 2;
-                            int moveSquare = 0;
-                            int captureSquare = 0;
-                            GridEntry staringSquare = BoardArray[i];
-                            GridEntry[] newValuesForBoardArray = (GridEntry[])BoardArray.Clone();
-
-                            if (squareToMoveTo >= 0 && squareToMoveTo < line.Count())
-                            {
-                                moveSquare = line[squareToMoveTo];
-                                captureSquare = captureIndexForBlack >= 0 && captureIndexForBlack < 8 ? line[captureIndexForBlack] : -1;
-
-                                bool bHasCaptureSquareToLandOn = captureSquare >= 0 && BoardArray[captureSquare] == GridEntry.EMPTY;
-                                bool bHasPieceThatCanBeCaptued =  BoardArray[moveSquare] == GridEntry.WHITEKING || BoardArray[moveSquare] == GridEntry.WHITEPAWN;
-                                bool bHasMoveThatCanBeMade = BoardArray[moveSquare] == GridEntry.EMPTY;
-
-                                if ((bHasMoveThatCanBeMade || (bHasCaptureSquareToLandOn && bHasPieceThatCanBeCaptued)) == false)
-                                    continue;
-
-                                if (BoardArray[moveSquare] == GridEntry.EMPTY)
-                                {
-                                    isMove = true;
-                                }
-
-                                if (captureSquare > 0 && !isMove)
-                                {
-                                    isCapture = true;
-                                }
-                            }
-
-                            if (isMove)
-                            {
-                                newValuesForBoardArray[moveSquare] = (staringSquare == GridEntry.BLACKPAWN && (moveSquare == 1 || moveSquare == 3 || moveSquare ==  5 || moveSquare ==  7)) ? GridEntry.BLACKKING :  staringSquare;
-                                newValuesForBoardArray[i] = GridEntry.EMPTY;
-                                PossibleBoards.Add(new Board(newValuesForBoardArray, !m_TurnForPlayerBlack));
-                            }
-
-                            if (isCapture)
-                            {
-                                newValuesForBoardArray[captureSquare] = (staringSquare == GridEntry.BLACKPAWN && (moveSquare == 1 || moveSquare == 3 || moveSquare == 5 || moveSquare == 7)) ? GridEntry.BLACKKING : staringSquare;
-                                newValuesForBoardArray[moveSquare] = GridEntry.EMPTY;
-                                newValuesForBoardArray[i] = GridEntry.EMPTY;
-                                PossibleBoards.Add(new Board(newValuesForBoardArray, !m_TurnForPlayerBlack));
-                            }
-                        }
-                    }
+                if (BoardArray[i] != GridEntry.NULL && BoardArray[i] != GridEntry.EMPTY)
+                {
+                    PossibleBoards.AddRange(MoveForWhite(BoardArray[i], i));
+                    
+                    PossibleBoards.AddRange(MoveForBlack(BoardArray[i], i));
                 }
             }
 
             return PossibleBoards;
         }
 
-        public bool moveLeftForBlack(GridEntry piece, int i)
+        public List<Board> MoveForBlack(GridEntry piece, int i)
         {
+            List<Board> PossibleBoards = new List<Board>();
+
             if (m_TurnForPlayerBlack && (piece == GridEntry.BLACKKING || piece == GridEntry.BLACKPAWN))
             {
                 List<List<int>> linesToEvaluate = new List<List<int>>();
@@ -643,9 +482,7 @@ namespace Checkers.AI
                 {
                     bool bKingReverseLine = linesEvaluated.Any(y => y.All(j => line.Contains(j)));
                     linesEvaluated.Add(line);
-
                     bool isMove = false;
-
                     int squareCurrentPieceIsOn = line.IndexOf(i);
                     int squareToMoveTo = piece == GridEntry.BLACKKING ? (bKingReverseLine ? squareCurrentPieceIsOn + 1 : squareCurrentPieceIsOn - 1) : squareCurrentPieceIsOn - 1;
                     int captureIndexForBlack = piece == GridEntry.BLACKKING ? (bKingReverseLine ? squareCurrentPieceIsOn + 2 : squareCurrentPieceIsOn - 2) : squareCurrentPieceIsOn - 2;
@@ -668,21 +505,28 @@ namespace Checkers.AI
 
                         if (BoardArray[moveSquare] == GridEntry.EMPTY)
                         {
-                            return true;
+                            newValuesForBoardArray[moveSquare] = (staringSquare == GridEntry.BLACKPAWN && (moveSquare == 1 || moveSquare == 3 || moveSquare == 5 || moveSquare == 7)) ? GridEntry.BLACKKING : staringSquare;
+                            newValuesForBoardArray[i] = GridEntry.EMPTY;
+                            PossibleBoards.Add(new Board(newValuesForBoardArray, !m_TurnForPlayerBlack));
+                            isMove = true;
                         }
 
                         if (captureSquare > 0 && !isMove)
                         {
-                            return true;
+                            newValuesForBoardArray[captureSquare] = (staringSquare == GridEntry.BLACKPAWN && (moveSquare == 1 || moveSquare == 3 || moveSquare == 5 || moveSquare == 7)) ? GridEntry.BLACKKING : staringSquare;
+                            newValuesForBoardArray[moveSquare] = GridEntry.EMPTY;
+                            newValuesForBoardArray[i] = GridEntry.EMPTY;
+                            PossibleBoards.Add(new Board(newValuesForBoardArray, !m_TurnForPlayerBlack));
                         }
                     }
                 }
             }
-            return false;
+            return PossibleBoards;
         }
 
-        public bool moveLeftForWhite(GridEntry piece, int i)
+        public List<Board> MoveForWhite(GridEntry piece, int i)
         {
+            List<Board> PossibleBoards = new List<Board>();
             if (!m_TurnForPlayerBlack && (BoardArray[i] == GridEntry.WHITEKING || BoardArray[i] == GridEntry.WHITEPAWN))
             {
                 List<List<int>> linesToEvaluate = new List<List<int>>();
@@ -695,15 +539,13 @@ namespace Checkers.AI
                     foreach (var bline in linesToEvaluate)
                     {
                         List<int> nLine = new List<int>();
-                        foreach (int r in bline)
-                        {
-                            nLine.Add(r);
-                        }
+                        nLine.AddRange(bline);
                         extraLines.Add(nLine);
                     }
                 }
 
                 linesToEvaluate.AddRange(extraLines);
+
                 foreach (var line in linesToEvaluate)
                 {
                     bool bKingReverseLine = linesEvaluated.Contains(line);
@@ -733,18 +575,24 @@ namespace Checkers.AI
 
                         if (BoardArray[moveSquare] == GridEntry.EMPTY)
                         {
-                            return true;
+                            newValuesForBoardArray[moveSquare] = (staringSquare == GridEntry.WHITEPAWN && (moveSquare == 56 || moveSquare == 58 || moveSquare == 60 || moveSquare == 62)) ? GridEntry.WHITEKING : staringSquare;
+                            newValuesForBoardArray[i] = GridEntry.EMPTY;
+                            PossibleBoards.Add(new Board(newValuesForBoardArray, !m_TurnForPlayerBlack));
+                            isMove = true;
                         }
 
                         if (captureSquare > 0 && !isMove)
                         {
-                            return true;
+                            newValuesForBoardArray[captureSquare] = (staringSquare == GridEntry.WHITEPAWN && (moveSquare == 56 || moveSquare == 58 || moveSquare == 60 || moveSquare == 62)) ? GridEntry.WHITEKING : staringSquare;
+                            newValuesForBoardArray[moveSquare] = GridEntry.EMPTY;
+                            newValuesForBoardArray[i] = GridEntry.EMPTY;
+                            PossibleBoards.Add(new Board(newValuesForBoardArray, !m_TurnForPlayerBlack));
                         }
                     }
                 }
             }
 
-            return false;
+            return PossibleBoards;
         }
     }
 }
